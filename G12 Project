@@ -1,0 +1,79 @@
+// MQ-2 Sensor Pin
+const int mq2Pin = A0;
+
+// Calibration values (adjust these based on your calibration)
+const float R0 = 10; // Adjust based on your sensor calibration
+const float Ro_Co = 10; // Resistance in clean air for CO
+const float Ro_Ch4 = 10; // Resistance in clean air for CH₄
+const int sensorPin = A1; // Analog input pin connected to Vout
+float pressurePsi; // Pressure in psi
+float pressurePa;  // Pressure in pascals
+
+
+void setup() {
+  Serial.begin(9600);
+  pinMode(8,OUTPUT);
+  pinMode(9,OUTPUT);
+  pinMode(10,OUTPUT);
+  pinMode(11,OUTPUT);
+}
+
+void loop() {
+  // Read the analog value from the sensor
+  int sensorValue = analogRead(mq2Pin);
+  
+  // Convert the analog value to voltage
+  float voltage = sensorValue * (5.0 / 1023.0);
+  
+  // Calculate the sensor resistance
+  float Rl = (5.0 - voltage) / voltage * R0;
+  
+  // Calculate concentrations (in ppm)
+  float concentrationCO = pow(10, (log10(Rl / Ro_Co) / -0.45)); // Adjust the exponent based on datasheet
+  float concentrationCH4 = pow(10, (log10(Rl / Ro_Ch4) / -0.45)); // Adjust the exponent based on datasheet
+
+  // Print the results
+  //Serial.print("CO Concentration: ");
+  Serial.print(concentrationCO);
+  Serial.print(",");
+  
+  //Serial.print("CH4 Concentration: ");
+ Serial.print(concentrationCH4);
+  Serial.print(",");
+
+  // Convert voltage to pressure in psi
+  pressurePsi = (voltage + 0.5) * (40.0 / 4.0); // Example conversion
+
+  // Convert psi to pascals
+  pressurePa = pressurePsi * 6894.76; // 1 psi = 6894.76 pascals
+
+  // Print the results
+  //Serial.print("Pressure: ");
+ // Serial.print(pressurePsi);
+  //Serial.print(" psi, ");
+  Serial.print(pressurePa);
+  //Serial.println(" Pa"); // Print pressure in pascals
+ Serial.print("\n");
+
+  // Delay before the next reading
+  delay(1000);
+
+
+ if(concentrationCO>3)
+  {digitalWrite(8,HIGH);}
+  else
+  {digitalWrite(8,LOW);}
+
+  if(concentrationCH4>3){digitalWrite(9,HIGH);}
+  else{digitalWrite(9,LOW);}
+
+  if(pressurePa>221000){digitalWrite(10,HIGH);}
+  else{digitalWrite(10,LOW);}
+  
+  if(concentrationCO>3 |concentrationCH4>3|pressurePa>220000 )
+
+  {digitalWrite(11,HIGH);}
+ else
+ {digitalWrite(11,LOW);}
+}
+
